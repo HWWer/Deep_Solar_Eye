@@ -78,3 +78,21 @@ def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarr
 
     # return metadata and normalized image data
     return df, image_data
+
+def time_encoder(df: pd.DataFrame, hour_col, minute_col, second_col):
+    # Apply cyclical encoding for hour column
+    df[hour_col + '_sin'] = np.sin(2 * np.pi * df[hour_col] / 24)
+    df[hour_col + '_cos'] = np.cos(2 * np.pi * df[hour_col] / 24)
+
+    # Apply cyclical encoding for minute column
+    df[minute_col + '_sin'] = np.sin(2 * np.pi * df[minute_col] / 60)
+    df[minute_col + '_cos'] = np.cos(2 * np.pi * df[minute_col] / 60)
+
+    # Apply cyclical encoding for second column
+    df[second_col + '_sin'] = np.sin(2 * np.pi * df[second_col] / 60)
+    df[second_col + '_cos'] = np.cos(2 * np.pi * df[second_col] / 60)
+
+
+
+    # Return dataframe with sin and cos values
+    return df
