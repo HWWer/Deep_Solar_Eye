@@ -5,10 +5,12 @@ import os
 import cv2
 from datetime import datetime
 
-def preprocess_data(size=('full', 'noon')):
+def preprocess_data(size=('full', 'noon')) -> (pd.DataFrame, np.ndarray):
     """
     Preprocesses images from file. Returns metadata in a dataframe, and a np array of image data.
-    Use
+    Use 'size' kwarg to decide what split of the dataset will be processed and returned.
+
+    Returns: Metadata Dataframe,
     """
 
     folder_path = "../raw_data/PanelImages"
