@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import regex as re
 import os
 import cv2
 from datetime import datetime
