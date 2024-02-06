@@ -1,6 +1,6 @@
 from tensorflow.keras.applications import ResNet50, ResNet101, ResNet152
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input, Concatenate
 
 class ResNetModels:
     def __init__(self, model_name='ResNet50', input_shape=(224, 224, 3), pretrained=True):
@@ -37,7 +37,7 @@ class ResNetModels:
         """
         return self.model
 
-def regression_ResNet(model_name='ResNet50', input_shape=(224, 224, 3), num_units=512, pretrained=True):
+def regression_ResNet(model_name='ResNet50', input_shape=(224, 224, 3),input_time_irradiance=(2,), num_units=512, pretrained=True):
     """
     Creates a ResNet model adapted for regression, allowing choice of ResNet variant.
 
@@ -59,10 +59,22 @@ def regression_ResNet(model_name='ResNet50', input_shape=(224, 224, 3), num_unit
 
     # Build the model
     input_tensor = Input(shape=input_shape)
+    input_time_irradiance=Input(shape=(2,))
+
     x = base_model(input_tensor)
     x = GlobalAveragePooling2D()(x)
     x = Dense(num_units, activation='relu')(x)
-    output_layer = Dense(1, activation='linear')(x)
-    model = Model(inputs=input_tensor, outputs=output_layer)
+
+    #Dense layer for time and irradiance data
+    dense_time_irradiance = Dense(64, activation='relu')(input_time_irradiance)
+
+    #Concatenate the image and time features
+    concatenated = Concatenate()([x, dense_time_irradiance])
+
+    #Dense layer for combined features
+    dense_combined = Dense(64, activation='relu')(concatenated)
+    output_layer = Dense(1, activation='linear')(dense_combined)
+    model = Model(inputs=[input_tensor, input_time_irradiance], outputs=output_layer)
+
 
     return model
