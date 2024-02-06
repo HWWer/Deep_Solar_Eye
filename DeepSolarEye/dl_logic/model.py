@@ -37,7 +37,7 @@ class ResNetModels:
         """
         return self.model
 
-def regression_ResNet(model_name='ResNet50', input_shape=(224, 224, 3), num_units=512, pretrained=True):
+def regression_ResNet(model_name='ResNet50', input_shape=(224, 224, 3),input_time_irradiance=(2,), num_units=512, pretrained=True):
     """
     Creates a ResNet model adapted for regression, allowing choice of ResNet variant.
 
