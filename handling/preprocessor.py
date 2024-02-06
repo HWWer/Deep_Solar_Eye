@@ -4,29 +4,41 @@ import os
 import cv2
 from datetime import datetime
 
-def preprocess_data(size=('full', 'noon')) -> (pd.DataFrame, np.ndarray):
+def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarray):
     """
     Preprocesses images from file. Returns metadata in a dataframe, and a np array of image data.
     Use 'size' kwarg to decide what split of the dataset will be processed and returned.
+    'full' = c. 45k images
+    'noon' = c. 3.7k images
+    '15_mins' = c. 1k images
 
-    Returns: Metadata Dataframe,
+    Returns: Metadata Dataframe, Tensor np.ndarray
     """
 
     folder_path = "../raw_data/PanelImages"
     image_data = [] # initialise an empty array to stack the images
     metadata = []
     # Regular expression pattern to extract date and intensity values from the filename
+    # Regular expression pattern to extract date and intensity values from the filename
+    minute_range = np.arange(0, 15, 1)
+    # Convert the numpy array to a list of strings
+    minute_range_strings = [str(num) for num in minute_range]
+    read_count = 0
 
     # capped at 1000 for now
     for filename in os.listdir(folder_path):
         split_name = filename.split('_')
         hour = split_name[4]
-        if size == 'noon' and hour != '12':
+        minute = split_name[6]
+        # put in the break
+        if size in ['noon', '15_mins'] and hour != '12':
             continue
+        if size == '15_mins' and minute not in minute_range_strings:
+            continue
+        read_count += 1
         weekday = split_name[1]
         month = split_name[2]
         day = split_name[3]
-        minute = split_name[6]
         second = split_name[8]
         year = split_name[9]
         datetime_obj = datetime.strptime(f"{month} {day} {year} {hour}:{minute}:{second}", "%b %d %Y %H:%M:%S")
@@ -51,6 +63,7 @@ def preprocess_data(size=('full', 'noon')) -> (pd.DataFrame, np.ndarray):
         image_array = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
         image_data.append(image_array)
 
+    print(f'loaded {read_count} images')
     # Convert the list of tuples to a pandas DataFrame
     df = pd.DataFrame(metadata, columns=['Month', 'Day', 'Date', 'Hour', 'Minute', 'Second', 'Year',
                                         'Datetime', 'Percentage Loss', 'Irradiance Level'])
