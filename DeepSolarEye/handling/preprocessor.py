@@ -4,6 +4,7 @@ import os
 import cv2
 from datetime import datetime
 
+
 def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarray):
     """
     Preprocesses images from file. Returns metadata in a dataframe, and a np array of image data.
