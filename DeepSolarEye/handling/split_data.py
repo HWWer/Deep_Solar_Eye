@@ -8,8 +8,14 @@ def train_test_val_split(train_ratio=0.64, test_ratio=0.2, val_ratio=0.16):
     If any 'train, test, val' folders already exist, they are overwritten.
     Default splits are set to 64% train, 20% test, and 16% val of total files.
     """
-    input_folder="../raw_data/PanelImages"
-    output_folder = "../raw_data/"
+    import os
+
+    current_folder = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
+    #input_folder="/raw_data/PanelImages"
+    #output_folder = "/raw_data/"
+    input_folder = os.path.join(current_folder, "raw_data/PanelImages")
+    output_folder = os.path.join(current_folder, "raw_data/")
 
     # Check if the input folder exists
     if not os.path.exists(input_folder):
