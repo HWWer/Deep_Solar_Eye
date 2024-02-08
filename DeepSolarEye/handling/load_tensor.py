@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 
-def get_numerical_data() -> pd.DataFrame:
+def get_numerical_data(folder_path) -> pd.DataFrame:
     """
     Preprocesses images from file and returns metadata in a dataframe.
     Always processes and returns the full dataset without any time-based filtering.
@@ -15,7 +15,7 @@ def get_numerical_data() -> pd.DataFrame:
     - pd.DataFrame: Metadata Dataframe with only seconds of the day, percentage loss, and irradiance level.
     """
 
-    folder_path = "../raw_data/PanelImages"
+    #folder_path = "../raw_data/PanelImages"
     metadata = []  # Initialise an empty list to collect metadata
 
     # Iterate through files in the specified folder path
@@ -47,7 +47,7 @@ def get_numerical_data() -> pd.DataFrame:
     return df
 
 
-def load_and_process_image(file_path):
+def load_and_process_image(folder_path):
     """
     Loads and preprocesses a single image file.
 
@@ -57,13 +57,13 @@ def load_and_process_image(file_path):
     Returns:
     - img: tf.Tensor, the preprocessed image tensor.
     """
-    img = tf.io.read_file(file_path)
+    img = tf.io.read_file(folder_path)
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [224, 224])
     img = preprocess_input(img)
     return img
 
-def load_tensor(df, batch_size):
+def load_tensor(df, batch_size, folder_path):
     """
     Prepares datasets for training, including image preprocessing and data batching.
 
@@ -74,8 +74,8 @@ def load_tensor(df, batch_size):
     Returns:
     - all_ds: tf.data.Dataset, a dataset ready for training.
     """
-    path_imgs = "../raw_data/PanelImages/*.jpg"  # Make sure this matches your file patterns
-    images = tf.data.Dataset.list_files(path_imgs, shuffle=False)
+    #folder_path =  "../raw_data/PanelImages" # Make sure this matches your file patterns
+    images = tf.data.Dataset.list_files(folder_path, shuffle=False)
 
     # Correctly map the load_and_process_image function to each image file path
     images_ds = images.map(load_and_process_image).batch(batch_size)
@@ -88,4 +88,4 @@ def load_tensor(df, batch_size):
     x_ds = tf.data.Dataset.zip((images_ds, df_ds))
     all_ds = tf.data.Dataset.zip((x_ds, y_ds))
 
-    return all_ds
+    return all_ds, batch_size
