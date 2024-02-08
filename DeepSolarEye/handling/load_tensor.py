@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 
 def get_numerical_data(folder_path) -> pd.DataFrame:
@@ -45,6 +46,9 @@ def get_numerical_data(folder_path) -> pd.DataFrame:
 
     # Specify column data types
     df = df.astype({'Seconds of Day': int, 'Percentage Loss': float, 'Irradiance Level': float})
+    # Apply Min-Max scaling to Seconds of the Day and Irradiance Level
+    scaler = MinMaxScaler()
+    df[['Seconds of Day', 'Irradiance Level']] = scaler.fit_transform(df[['Seconds of Day', 'Irradiance Level']])
 
     return df
 
