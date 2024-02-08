@@ -23,19 +23,30 @@ def train_test_val_split(train_ratio=0.64, test_ratio=0.2, val_ratio=0.16):
 
     # Create output folders if they don't exist
     for folder in ['train_data', 'test_data', 'val_data']:
-        os.makedirs(os.path.join(output_folder, folder), exist_ok=True)
+        # if folders exist
+        folder_path = os.path.join(output_folder, folder)
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)  # Delete existing folder
+
+        os.makedirs(os.path.join(output_folder, folder), exist_ok=False)
 
     # List files in the input folder and filter out files that do not end with .jpg
     image_files = [file for file in os.listdir(input_folder) if file.lower().endswith('.jpg')]
 
+    print(len(image_files))
     # Shuffle the list of image files
     random.shuffle(image_files)
 
-    # Calculate the number of files for each split
+    percentage = train_ratio + test_ratio + val_ratio
+
     num_files = len(image_files)
     num_train = int(train_ratio * num_files)
     num_test = int(test_ratio * num_files)
     num_val = int(val_ratio * num_files)
+
+    image_files = image_files[:int(len(image_files) * percentage)]
+    print(len(image_files))
+    # Calculate the number of files for each split
 
     # Split the files into train, test, and val sets by slicing list of filenames
     train_files = image_files[:num_train]
