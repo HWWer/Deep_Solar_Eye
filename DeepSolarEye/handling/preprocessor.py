@@ -30,7 +30,7 @@ def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarr
 
         if not filename.endswith(".jpg"):
             continue
-            
+
         split_name = filename.split('_')
         hour = split_name[4]
         minute = split_name[6]
