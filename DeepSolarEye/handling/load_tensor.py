@@ -74,8 +74,9 @@ def load_tensor(df, batch_size, folder_path):
     Returns:
     - all_ds: tf.data.Dataset, a dataset ready for training.
     """
-    #folder_path =  "../raw_data/PanelImages" # Make sure this matches your file patterns
-    images = tf.data.Dataset.list_files(folder_path, shuffle=False)
+    #folder_path =  "../raw_data/PanelImages/*.jpg" # Make sure this matches your file patterns
+    file_path = os.path.join(folder_path, "*.jpg")
+    images = tf.data.Dataset.list_files(file_path, shuffle=False)
 
     # Correctly map the load_and_process_image function to each image file path
     images_ds = images.map(load_and_process_image).batch(batch_size)
