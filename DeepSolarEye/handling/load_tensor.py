@@ -16,10 +16,12 @@ def get_numerical_data(folder_path) -> pd.DataFrame:
     """
 
     #folder_path = "../raw_data/PanelImages"
+    current_folder = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    file_path = os.path.join(current_folder, "raw_data/",folder_path)
     metadata = []  # Initialise an empty list to collect metadata
 
     # Iterate through files in the specified folder path
-    for filename in os.listdir(folder_path):
+    for filename in os.listdir(file_path):
         if not filename.endswith(".jpg"):
             continue  # Skip files that are not JPG images
 
@@ -75,7 +77,9 @@ def load_tensor(df, batch_size, folder_path):
     - all_ds: tf.data.Dataset, a dataset ready for training.
     """
     #folder_path =  "../raw_data/PanelImages/*.jpg" # Make sure this matches your file patterns
-    file_path = os.path.join(folder_path, "*.jpg")
+    current_folder = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    file_path = os.path.join(current_folder, "raw_data/",folder_path, "*.jpg")
+    #file_path = os.path.join(folder_path, "*.jpg")
     images = tf.data.Dataset.list_files(file_path, shuffle=False)
 
     # Correctly map the load_and_process_image function to each image file path
