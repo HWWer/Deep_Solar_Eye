@@ -12,7 +12,7 @@ def get_numerical_data() -> pd.DataFrame:
     Always processes and returns the full dataset without any time-based filtering.
 
     Returns:
-    - pd.DataFrame: Metadata Dataframe
+    - pd.DataFrame: Metadata Dataframe with only seconds of the day, percentage loss, and irradiance level.
     """
 
     folder_path = "../raw_data/PanelImages"
@@ -21,33 +21,28 @@ def get_numerical_data() -> pd.DataFrame:
     # Iterate through files in the specified folder path
     for filename in os.listdir(folder_path):
         if not filename.endswith(".jpg"):
-            continue  # Skip files that are not JPEG images
+            continue  # Skip files that are not JPG images
 
         # Split filename to extract metadata
         split_name = filename.split('_')
-        hour = split_name[4]
-        minute = split_name[6]
-        weekday = split_name[1]
-        month = split_name[2]
-        day = split_name[3]
-        second = split_name[8]
-        year = split_name[9]
-        # Convert string to datetime object
-        datetime_obj = datetime.strptime(f"{month} {day} {year} {hour}:{minute}:{second}", "%b %d %Y %H:%M:%S")
+        hour = int(split_name[4])
+        minute = int(split_name[6])
+        second = int(split_name[8])
         age_loss = split_name[11]
         irradiance_level = split_name[13][:-4]  # Remove file extension
 
+        # Calculate seconds of the day
+        seconds_of_day = hour * 3600 + minute * 60 + second
+
         # Append extracted information to the metadata list
-        filename_info = [month, weekday, day, hour, minute, second, year, datetime_obj, age_loss, irradiance_level]
+        filename_info = [seconds_of_day, age_loss, irradiance_level]
         metadata.append(filename_info)
 
     # Create a DataFrame from the metadata list
-    df = pd.DataFrame(metadata, columns=['Month', 'Weekday', 'Day', 'Hour', 'Minute', 'Second', 'Year',
-                                         'Datetime', 'Percentage Loss', 'Irradiance Level'])
+    df = pd.DataFrame(metadata, columns=['Seconds of Day', 'Percentage Loss', 'Irradiance Level'])
 
     # Specify column data types
-    df = df.astype({'Month': str, 'Weekday': str, 'Day': int, 'Hour': int, 'Minute': int, 'Second': int, 'Year': int,
-                    'Datetime': 'datetime64[ns]', 'Percentage Loss': float, 'Irradiance Level': float})
+    df = df.astype({'Seconds of Day': int, 'Percentage Loss': float, 'Irradiance Level': float})
 
     return df
 
