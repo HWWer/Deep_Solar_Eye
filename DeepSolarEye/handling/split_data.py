@@ -1,14 +1,14 @@
 import os
 import random
 import shutil
-
+from tqdm import tqdm
 def train_test_val_split(train_ratio=0.64, test_ratio=0.2, val_ratio=0.16):
     """
     Function to randomly split data into three dirs 'train', 'test', 'val'.
     If any 'train, test, val' folders already exist, they are overwritten.
     Default splits are set to 64% train, 20% test, and 16% val of total files.
     """
-    import os
+
 
     current_folder = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -43,7 +43,7 @@ def train_test_val_split(train_ratio=0.64, test_ratio=0.2, val_ratio=0.16):
     val_files = image_files[num_train+num_test:]
 
     # Copy files to their respective folders
-    for files, folder in zip([train_files, test_files, val_files], ['train_data', 'test_data', 'val_data']):
+    for files, folder in tqdm(zip([train_files, test_files, val_files], ['train_data', 'test_data', 'val_data'])):
         for file in files:
             shutil.copy(os.path.join(input_folder, file), os.path.join(output_folder, folder, file))
 
