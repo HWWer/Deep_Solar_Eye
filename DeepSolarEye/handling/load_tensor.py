@@ -81,7 +81,7 @@ def load_tensor(df, batch_size):
     images_ds = images.map(load_and_process_image).batch(batch_size)
 
     # Prepare additional data and target datasets, then batch them
-    df_ds = tf.data.Dataset.from_tensor_slices(df[['Hour', 'Irradiance Level']].values.astype(np.float32)).batch(batch_size)
+    df_ds = tf.data.Dataset.from_tensor_slices(df[['Seconds of Day', 'Irradiance Level']].values.astype(np.float32)).batch(batch_size)
     y_ds = tf.data.Dataset.from_tensor_slices(df[['Percentage Loss']].values.astype(np.float32)).batch(batch_size)
 
     # Combine datasets into a final dataset for training
