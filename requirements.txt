@@ -4,3 +4,10 @@ tensorflow==2.10.0; sys_platform != 'darwin' # Windows & Ubuntu Intel chips
 pandas==2.2.0
 numpy==1.26.3
 opencv-python==4.9.0.80
+
+
+#API
+fastapi==0.108.0
+uvicorn
+
+streamlit
