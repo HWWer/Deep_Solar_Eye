@@ -3,6 +3,8 @@ import numpy as np
 import os
 import cv2
 from datetime import datetime
+from tensorflow.keras.applications.resnet50 import preprocess_input
+import tensorflow as tf
 
 def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarray):
     """
@@ -30,7 +32,7 @@ def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarr
 
         if not filename.endswith(".jpg"):
             continue
-            
+
         split_name = filename.split('_')
         hour = split_name[4]
         minute = split_name[6]
@@ -100,3 +102,12 @@ def time_encoder(df: pd.DataFrame, hour_col, minute_col, second_col):
 
     # Return dataframe with sin and cos values
     return df
+
+def preprocess_img(img):
+    '''Preprocess the image from user and transforms it into a Dataset for model input'''
+    img = tf.image.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, [224, 224])
+    img = preprocess_input(img)
+    img = tf.data.Dataset(img)
+    images_ds = tf.data.Dataset.from_tensor_slices(img)
+    return images_ds
