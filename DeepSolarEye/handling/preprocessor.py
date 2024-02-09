@@ -106,8 +106,11 @@ def time_encoder(df: pd.DataFrame, hour_col, minute_col, second_col):
 def preprocess_img(img):
     '''Preprocess the image from user and transforms it into a Dataset for model input'''
     img = tf.image.decode_jpeg(img, channels=3)
+    #img = tf.convert_to_tensor(img, dtype=tf.uint8)
+
     img = tf.image.resize(img, [224, 224])
     img = preprocess_input(img)
-    img = tf.data.Dataset(img)
-    images_ds = tf.data.Dataset.from_tensor_slices(img)
+
+    images_ds = tf.data.Dataset.from_tensors(img)
+
     return images_ds
