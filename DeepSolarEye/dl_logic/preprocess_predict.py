@@ -30,13 +30,7 @@ img= cv2.imread(image_path)
 
 
 
-def predict_loss(model,img,filename):
-
-    model_path=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'model_weights/first_model.h5')
-
-    model = model.load_weights(model_path)
-
-
+def preprocess_predict_loss(model,img,filename):
 
     images_ds = preprocess_img(img)
 
