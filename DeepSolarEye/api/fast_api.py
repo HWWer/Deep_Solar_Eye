@@ -28,9 +28,9 @@ async def receive_image(img: UploadFile=File(...)):
    ### Receiving and decoding the image
     filename=img.filename
     img = await img.read()
+    x_ds = preprocess_predict_loss(model, img, filename)
 
 
-
-    prediction = app.state.preprocess_predict_loss(img,filename)
+    prediction = app.state.predict(x_ds)
     return {'power_loss':prediction,
             'filename': filename}
