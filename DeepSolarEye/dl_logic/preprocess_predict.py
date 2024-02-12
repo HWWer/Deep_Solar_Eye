@@ -81,6 +81,6 @@ def preprocess_predict_loss(model,img,filename):
     x_ds = tf.data.Dataset.zip((images_ds, df_ds))
 
 
-    loss_prediction= model.predict(x_ds)
+    #loss_prediction= model.predict(x_ds)
 
-    return loss_prediction
+    return x_ds
