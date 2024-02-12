@@ -10,3 +10,5 @@ train_test_val_split:
 run_process_mask:
 	@echo "Processing images and generating masks..."
 	@python $(SCRIPT_PATH)
+
+#
