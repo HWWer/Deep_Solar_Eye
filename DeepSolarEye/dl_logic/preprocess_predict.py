@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from PIL import Image
 import cv2
 import os
-
+import ipdb
 from DeepSolarEye.handling.preprocessor import preprocess_img
 from DeepSolarEye.dl_logic.model import regression_ResNet
 
@@ -30,11 +30,11 @@ img= cv2.imread(image_path)
 
 
 
-def preprocess_predict_loss(model,img,filename):
+def preprocess_predict_loss(img,filename):
 
     images_ds = preprocess_img(img)
 
-
+    ipdb.set_trace()
     if filename.startswith('solar_'):
 
         split_name = filename.split('_')
@@ -69,7 +69,7 @@ def preprocess_predict_loss(model,img,filename):
 
     #Scaling num features
     scaler = MinMaxScaler()
-    df[['Seconds of Day', 'Irradiance Level']] = scaler.fit_transform(df[['Seconds of Day', 'Irradiance Level']])
+    df[['Seconds of Day', 'Irradiance Level']] = scaler.transform(df[['Seconds of Day', 'Irradiance Level']])
     #Add index to DataFrame
     df['index'] = range(len(df))
     df.set_index('index', inplace=True)
