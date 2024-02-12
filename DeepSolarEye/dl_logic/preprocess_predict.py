@@ -7,6 +7,7 @@ from PIL import Image
 import cv2
 import os
 import ipdb
+import pickle
 from DeepSolarEye.handling.preprocessor import preprocess_img
 from DeepSolarEye.dl_logic.model import regression_ResNet
 
@@ -32,9 +33,8 @@ img= cv2.imread(image_path)
 
 def preprocess_predict_loss(img,filename):
 
-    images_ds = preprocess_img(img)
+    tensor = preprocess_img(img)
 
-    ipdb.set_trace()
     if filename.startswith('solar_'):
 
         split_name = filename.split('_')
@@ -50,15 +50,12 @@ def preprocess_predict_loss(img,filename):
         # Append extracted information to the metadata list
         filename_info = [[seconds_of_day, irradiance_level]]
 
-
         # Create a DataFrame from the metadata list
         df = pd.DataFrame(filename_info, columns=['Seconds of Day', 'Irradiance Level'])
 
         # Specify column data types
         df = df.astype({'Seconds of Day': int, 'Irradiance Level': float})
         # Apply Min-Max scaling to Seconds of the Day and Irradiance Level
-
-
 
     else:
         #Fixed input for seconds/time and irradiance level. Set to max values
@@ -68,19 +65,15 @@ def preprocess_predict_loss(img,filename):
 
 
     #Scaling num features
-    scaler = MinMaxScaler()
+    # Load the scaler from the file
+    scaler_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'handling/scaler_seconds_irradiance.pkl')
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
     df[['Seconds of Day', 'Irradiance Level']] = scaler.transform(df[['Seconds of Day', 'Irradiance Level']])
     #Add index to DataFrame
     df['index'] = range(len(df))
     df.set_index('index', inplace=True)
 
+    x = [tensor, df]
 
-    df_ds = tf.data.Dataset.from_tensor_slices(df[['Seconds of Day', 'Irradiance Level']].values.astype(np.float32))
-
-    #combine
-    x_ds = tf.data.Dataset.zip((images_ds, df_ds))
-
-
-    #loss_prediction= model.predict(x_ds)
-
-    return x_ds
+    return x
