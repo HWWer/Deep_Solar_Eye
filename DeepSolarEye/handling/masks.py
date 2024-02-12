@@ -7,7 +7,7 @@ from tqdm import tqdm
 import shutil
 from sklearn.model_selection import train_test_split
 
-
+#test comment
 def process_solar_panel_image(image_path, gaussian_kernel=(3, 3), intensity_threshold=120):
     # Load the image
 
