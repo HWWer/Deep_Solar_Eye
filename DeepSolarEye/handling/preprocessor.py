@@ -5,6 +5,7 @@ import cv2
 from datetime import datetime
 from tensorflow.keras.applications.resnet50 import preprocess_input
 import tensorflow as tf
+import ipdb
 
 def preprocess_data(size=('full', 'noon', '15_mins')) -> (pd.DataFrame, np.ndarray):
     """
