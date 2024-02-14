@@ -38,8 +38,8 @@ class SolarDataset(mrcnn.utils.Dataset):
         """
         info = self.image_info[image_id]
         path = info['annotation']
-        boxes, class_ids = self.extract_boxes(path)
-        h, w = info['height'], info['width']
+        boxes, class_ids, h, w = self.extract_boxes(path)
+
         masks = zeros([h, w, len(boxes)], dtype='uint8')
 
         for i, box in enumerate(boxes):
@@ -56,6 +56,9 @@ class SolarDataset(mrcnn.utils.Dataset):
         with open(filename) as f:
             data = json.load(f)
 
+        image_dimensions = data["image_dimensions"]
+        height, width = image_dimensions["height"], image_dimensions["width"]
+
         boxes = []
         class_ids = []
         for item in data:
@@ -65,7 +68,7 @@ class SolarDataset(mrcnn.utils.Dataset):
                 boxes.append([bbox[0], bbox[1], bbox[2], bbox[3]])
                 class_ids.append(self.class_names.index(label))
 
-        return boxes, class_ids
+        return boxes, class_ids, height, width
 
 class SolarConfig(mrcnn.config.Config):
     train_images_dir = '/raw_data/RCNN_Masks/train/images'

@@ -46,12 +46,16 @@ def create_masks_for_rcnn(classified_img, image_name, rcnn_mask_dir):
     cv2.imwrite(os.path.join(rcnn_mask_dir, f"{image_name}_solar_panel.png"), mask_solar_panel)
     cv2.imwrite(os.path.join(rcnn_mask_dir, f"{image_name}_soil.png"), mask_soil)
 
+    height, width = classified_img.shape[:2]
+    output_data = {
+        "image_dimensions": {"height": height, "width": width},
+        "objects": bounding_boxes
+    }
     # Save bounding box data as JSON
-    bbox_file_path = os.path.join(rcnn_mask_dir, f"{image_name}_bboxes.json")  # Initial path for bbox file
+    bbox_file_path = os.path.join(rcnn_mask_dir, f"{image_name}_bboxes.json")
 
-    # Save bounding box data as JSON
     with open(bbox_file_path, 'w') as file:
-        json.dump(bounding_boxes, file)
+        json.dump(output_data, file)
 
     # Return the masks and the initial bbox file path for further processing
     return mask_background, mask_solar_panel, mask_soil, bbox_file_path
@@ -147,7 +151,7 @@ def copy_and_create_masks(image_paths, dataset_type, rcnn_mask_dir, panel_images
         shutil.copy(image_path, os.path.join(images_dir, os.path.basename(image_path)))
 
 
-def batch_process_images(batch_size=50, scaling_factor=0.5):
+def batch_process_images(batch_size=50, scaling_factor=0.01):
     current_folder = os.path.dirname(os.path.abspath(__file__))
     panel_images_dir = os.path.join(current_folder, "../../raw_data/PanelImages")
     rcnn_mask_dir = os.path.join(current_folder, "../../raw_data/RCNN_Masks")
