@@ -61,7 +61,7 @@ class SolarDataset(mrcnn.utils.Dataset):
 
         boxes = []
         class_ids = []
-        for item in data:
+        for item in data["objects"]:
             label = item['label']
             if label in ['solar_panel', 'soil']:
                 bbox = item['bbox']
