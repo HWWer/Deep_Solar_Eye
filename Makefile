@@ -11,4 +11,6 @@ run_process_mask:
 	@echo "Processing images and generating masks..."
 	@python $(SCRIPT_PATH)
 
-#
+run_api:
+	uvicorn DeepSolarEye.api.fast_api:app --reload
+

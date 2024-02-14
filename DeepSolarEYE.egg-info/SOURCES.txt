@@ -1,0 +1,8 @@
+README.md
+setup.py
+DeepSolarEYE.egg-info/PKG-INFO
+DeepSolarEYE.egg-info/SOURCES.txt
+DeepSolarEYE.egg-info/dependency_links.txt
+DeepSolarEYE.egg-info/not-zip-safe
+DeepSolarEYE.egg-info/requires.txt
+DeepSolarEYE.egg-info/top_level.txt
