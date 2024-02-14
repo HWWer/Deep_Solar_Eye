@@ -8,7 +8,55 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 #test comment
-def process_solar_panel_image(image_path, gaussian_kernel=(3, 3), intensity_threshold=120):
+
+import json
+
+def create_masks_for_rcnn(classified_img, image_name, rcnn_mask_dir):
+    """
+    Create separate masks for each class and calculate bounding boxes based on binary masks.
+    """
+    # Create separate masks for each class
+    mask_background = np.where(classified_img == 1, 255, 0).astype(np.uint8)
+    mask_solar_panel = np.where(classified_img == 2, 255, 0).astype(np.uint8)
+    mask_soil = np.where(classified_img == 3, 255, 0).astype(np.uint8)
+
+    # Generate contours for each class mask
+    contours_background, _ = cv2.findContours(mask_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_solar_panel, _ = cv2.findContours(mask_solar_panel, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_soil, _ = cv2.findContours(mask_soil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Initialize list to store bounding box data
+    bounding_boxes = []
+
+    # Function to process contours and add bounding box data
+    def process_contours(contours, label):
+        for contour in contours:
+            if cv2.contourArea(contour) < 12:  # Ignore small contours
+                continue
+            x, y, w, h = cv2.boundingRect(contour)
+            bounding_boxes.append({'label': label, 'bbox': [x, y, x+w, y+h]})
+
+    # Process contours for each class
+    process_contours(contours_background, 'background')
+    process_contours(contours_solar_panel, 'solar_panel')
+    process_contours(contours_soil, 'soil')
+
+    # Save masks
+    cv2.imwrite(os.path.join(rcnn_mask_dir, f"{image_name}_background.png"), mask_background)
+    cv2.imwrite(os.path.join(rcnn_mask_dir, f"{image_name}_solar_panel.png"), mask_solar_panel)
+    cv2.imwrite(os.path.join(rcnn_mask_dir, f"{image_name}_soil.png"), mask_soil)
+
+    # Save bounding box data as JSON
+    bbox_file_path = os.path.join(rcnn_mask_dir, f"{image_name}_bboxes.json")  # Initial path for bbox file
+
+    # Save bounding box data as JSON
+    with open(bbox_file_path, 'w') as file:
+        json.dump(bounding_boxes, file)
+
+    # Return the masks and the initial bbox file path for further processing
+    return mask_background, mask_solar_panel, mask_soil, bbox_file_path
+
+def process_solar_panel_image(image_path, gaussian_kernel=(5, 5), intensity_threshold=115):
     # Load the image
 
     solar_panel_img = cv2.imread(image_path)
@@ -46,6 +94,7 @@ def process_solar_panel_image(image_path, gaussian_kernel=(3, 3), intensity_thre
     # Classify non-dark pixels as Class 3
     classified_img[non_dark_pixels] = 3  # Class 3
 
+    # Return the classified image
     return classified_img
 
 def clear_or_create_directory(directory_path):
@@ -69,48 +118,49 @@ def split_data(image_paths, train_size=0.6, val_size=0.2, test_size=0.2):
 
 def copy_and_create_masks(image_paths, dataset_type, rcnn_mask_dir, panel_images_dir):
     """
-    Copy original images and create masks for a specific dataset type (train, val, test).
+    Copy original images and create masks and annotations for a specific dataset type (train, val, test).
     """
     dataset_dir = os.path.join(rcnn_mask_dir, dataset_type)
     images_dir = os.path.join(dataset_dir, "images")
     masks_dir = os.path.join(dataset_dir, "masks")
+    annots_dir = os.path.join(dataset_dir, "annots")  # New directory for annotations
 
     # Clear or create directories
     clear_or_create_directory(images_dir)
     clear_or_create_directory(masks_dir)
+    clear_or_create_directory(annots_dir)  # Ensure the annotations directory is created
 
     for image_path in tqdm(image_paths, desc=f"Processing {dataset_type} images"):
-        image_name = os.path.basename(image_path).split('.')[0]  # Get the base name without the extension
-        # Process image to get the classified mask
+        image_name = os.path.basename(image_path)  # Get the base name
+
+        # Process image to get the classified mask and bounding box data
         classified_img = process_solar_panel_image(image_path)
-        # Save the mask
-        create_masks_for_rcnn(classified_img, image_name, masks_dir)
+
+        # Save the mask and move bbox data to annots directory
+        mask_background, mask_solar_panel, mask_soil, bbox_file_path = create_masks_for_rcnn(classified_img, image_name, masks_dir)
+
+        # Move the JSON bounding box file to the annotations directory
+        new_bbox_file_path = os.path.join(annots_dir, f"{image_name}_bboxes.json")
+        os.rename(bbox_file_path, new_bbox_file_path)
+
         # Copy the original image
         shutil.copy(image_path, os.path.join(images_dir, os.path.basename(image_path)))
 
-def create_masks_for_rcnn(classified_img, image_name, rcnn_mask_dir):
-    # Create separate masks for each class
-    mask_background = np.where(classified_img == 1, 255, 0).astype(np.uint8)
-    mask_solar_panel = np.where(classified_img == 2, 255, 0).astype(np.uint8)
-    mask_soil = np.where(classified_img == 3, 255, 0).astype(np.uint8)
 
-    # Construct the full path for each mask
-    background_path = os.path.join(rcnn_mask_dir, image_name + '_background.png')
-    solar_panel_path = os.path.join(rcnn_mask_dir, image_name + '_solar_panel.png')
-    soil_path = os.path.join(rcnn_mask_dir, image_name + '_soil.png')
+def batch_process_images(batch_size=50, scaling_factor=0.5):
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    panel_images_dir = os.path.join(current_folder, "../../raw_data/PanelImages")
+    rcnn_mask_dir = os.path.join(current_folder, "../../raw_data/RCNN_Masks")
+    all_image_paths = glob.glob(os.path.join(panel_images_dir, "*.jpg"))
 
-    # Save each mask as an image
-    cv2.imwrite(background_path, mask_background)
-    cv2.imwrite(solar_panel_path, mask_solar_panel)
-    cv2.imwrite(soil_path, mask_soil)
+    print("Looking for images in:", panel_images_dir)
+    #all_image_paths = glob.glob(os.path.join(panel_images_dir, "*.jpg"))
+    print(f"Found {len(all_image_paths)} images")
 
-    return background_path, solar_panel_path, soil_path
+    # Apply scaling factor
+    selected_image_count = int(len(all_image_paths) * scaling_factor)
+    image_paths = np.random.choice(all_image_paths, selected_image_count, replace=False)
 
-def batch_process_images(batch_size=50):
-    current_folder = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    panel_images_dir = os.path.join(current_folder, "raw_data/PanelImages")
-    rcnn_mask_dir = os.path.join(current_folder, "raw_data/RCNN_Masks")
-    image_paths = glob.glob(os.path.join(panel_images_dir, "*.jpg"))
 
     # Split the dataset
     train_paths, val_paths, test_paths = split_data(image_paths)
