@@ -1,0 +1,9 @@
+# FastAPI
+fastapi
+uvicorn
+python-multipart
+
+# preprocess predict
+pandas
+tensorflow
+scikit-learn
